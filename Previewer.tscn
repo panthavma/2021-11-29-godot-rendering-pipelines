@@ -1,0 +1,37 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://Previewer-GDScript.gd" type="Script" id=1]
+
+[sub_resource type="QuadMesh" id=1]
+size = Vector2( 2, 2 )
+
+[sub_resource type="Shader" id=2]
+code = "shader_type spatial;
+render_mode unshaded;
+
+void vertex() {
+	// Cover the screen
+	POSITION = vec4(VERTEX, 1.0);
+}
+
+void fragment() {
+	vec3 pgBufferSample = texture(SCREEN_TEXTURE, SCREEN_UV, 0).rgb;
+	
+	// Same as the regular version
+	vec3 litColor = mix(vec3(0.7), vec3(1., 0.2, 0.2), pgBufferSample.r);
+	vec3 shadowColor = mix(vec3(0.1), vec3(0.8, 0., 0.), pgBufferSample.r);
+	float lightCoef = step(0.3, pgBufferSample.g);
+	vec3 finalColor = mix(shadowColor, litColor, lightCoef);
+	
+	// We use ALBEDO instead of COLOR
+	ALBEDO = finalColor;
+}
+"
+
+[sub_resource type="ShaderMaterial" id=3]
+shader = SubResource( 2 )
+
+[node name="Previewer" type="MeshInstance"]
+mesh = SubResource( 1 )
+material/0 = SubResource( 3 )
+script = ExtResource( 1 )
